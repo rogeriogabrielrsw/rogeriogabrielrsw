@@ -1,0 +1,2559 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trans Ideal - Gestão de Frota</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Variáveis e Cores */
+        :root {
+            --primary-color: #1a237e; /* Azul Escuro */
+            --secondary-color: #f0f4f8; /* Cinza claro */
+            --accent-color: #ffc107; /* Amarelo Dourado */
+            --text-color: #333; /* Texto escuro */
+            --danger-color: #d32f2f; /* Vermelho */
+            --success-color: #388e3c; /* Verde */
+            --info-color: #0288d1; /* Azul claro */
+            --card-bg: #fff; /* Fundo do card */
+            --border-color: #e0e0e0; /* Cor da borda */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            font-size: 16px; /* Tamanho de fonte base */
+        }
+
+        /* Layout Geral */
+        .container {
+            max-width: 1300px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 30px;
+            background-color: var(--card-bg);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        #app-logo {
+            height: 65px;
+            margin-right: 25px;
+        }
+
+        .header-title-group {
+            flex-grow: 1;
+        }
+
+        .header-title-group h1 {
+            margin: 0;
+            font-size: 28px; /* Fonte maior para o título */
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .header-subtitle {
+            margin: 0;
+            font-size: 15px; /* Fonte para o subtítulo */
+            color: #616161;
+            font-weight: 400;
+        }
+
+        .logout-btn {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #b71c1c;
+        }
+
+        /* Abas de Navegação */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            background-color: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 18px 25px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .tab-button:hover {
+            background-color: #2c387e;
+        }
+
+        .tab-button.active {
+            background-color: var(--accent-color);
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .view {
+            display: none;
+            padding: 20px;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Cards e Formulários */
+        .form-card, .history-card, .checklist-form-card, .checklist-history-card,
+        .driver-form-card, .driver-history-card, .vehicle-form-card, .vehicle-history-card,
+        .tire-form-card, .tire-history-card, .maintenance-form-card, .maintenance-history-card,
+        .fueling-form-card, .fueling-history-card, .service-order-form-card, .service-order-history-card,
+        .user-form-card, .user-history-card, .report-card {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(26, 35, 126, 0.2);
+        }
+
+        .form-group input:disabled, .form-group select:disabled, .form-group textarea:disabled {
+            background-color: #eceff1;
+            cursor: not-allowed;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .submit-btn {
+            padding: 12px 24px;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        .submit-btn.primary { background-color: var(--primary-color); }
+        .submit-btn.primary:hover { background-color: #2c387e; }
+        .submit-btn.cancel-btn { background-color: #757575; }
+        .submit-btn.cancel-btn:hover { background-color: #5d5d5d; }
+        .submit-btn.info { background-color: var(--info-color); }
+        .submit-btn.info:hover { background-color: #0277bd; }
+
+        /* Estilos de Tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 15px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #e8eaf6;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-transform: uppercase;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .action-column {
+            width: 1%;
+            white-space: nowrap;
+        }
+
+        .action-button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: background-color 0.2s ease;
+        }
+
+        .action-button.info { background-color: var(--info-color); }
+        .action-button.info:hover { background-color: #0277bd; }
+        .action-button.danger { background-color: var(--danger-color); }
+        .action-button.danger:hover { background-color: #b71c1c; }
+        .action-button.secondary { background-color: #757575; }
+        .action-button.secondary:hover { background-color: #5d5d5d; }
+        .action-button.success { background-color: var(--success-color); }
+        .action-button.success:hover { background-color: #2e7d32; }
+
+        .status-ok { color: var(--success-color); font-weight: 700; }
+        .status-nok { color: var(--danger-color); font-weight: 700; }
+        .status-active { color: var(--success-color); }
+        .status-inactive { color: var(--danger-color); }
+        .status-aberta { color: #ff9800; font-weight: 700; }
+        .status-concluida { color: var(--success-color); font-weight: 700; }
+        .status-em-estoque { color: #039be5; font-weight: 700; }
+        .status-montado { color: var(--success-color); font-weight: 700; }
+
+        /* Tela de Login */
+        #login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--primary-color);
+        }
+
+        #login-card {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        #login-card h2 {
+            margin-bottom: 25px;
+            color: var(--primary-color);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            width: 90%;
+            max-width: 650px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #9e9e9e;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #424242;
+        }
+
+        /* Checklist */
+        .checklist-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .checklist-table {
+            width: 100%;
+            min-width: 700px;
+        }
+
+        .checklist-table .conditions-cell {
+            width: 190px;
+        }
+
+        .checklist-table .comments-cell {
+            width: 350px;
+        }
+
+        .checklist-table .status-btn {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: #fafafa;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            font-size: 13px;
+        }
+
+        .checklist-table .status-btn:hover {
+            background-color: #e8eaf6;
+        }
+
+        .checklist-table .status-btn.selected-good {
+            background-color: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .checklist-table .status-btn.selected-regular {
+            background-color: #ff9800;
+            color: white;
+            border-color: #ff9800;
+        }
+
+        .checklist-table .status-btn.selected-bad {
+            background-color: var(--danger-color);
+            color: white;
+            border-color: var(--danger-color);
+        }
+
+        /* Relatórios e Filtros */
+        .report-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            margin-bottom: 25px;
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .report-actions {
+            margin-top: 25px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        #report-output table {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* Pneus */
+        #tire-actions-container {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .action-card {
+            background-color: #e3f2fd;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #90caf9;
+            flex: 1;
+            min-width: 280px;
+            text-align: center;
+        }
+
+        .action-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .action-card p {
+            font-size: 15px;
+            color: #616161;
+        }
+
+        .action-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        .action-btn.secondary { background-color: #757575; }
+        .action-btn.secondary:hover { background-color: #5d5d5d; }
+        .action-btn.info { background-color: var(--info-color); }
+        .action-btn.info:hover { background-color: #0277bd; }
+
+        .module-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-container">
+        <div id="login-card">
+            <img id="app-logo" src="https://transideal.com.br/wp-content/uploads/2021/08/logo-transideal.png" alt="Logo Trans Ideal" style="margin-bottom: 20px;">
+            <h2>Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Usuário:</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="submit-btn primary">Entrar</button>
+            </form>
+            <p id="login-error" style="color: var(--danger-color); margin-top: 15px;"></p>
+        </div>
+    </div>
+
+    <div id="app-container" style="display: none;">
+        <header class="header-container"></header>
+
+        <nav class="tabs"></nav>
+
+        <main class="container">
+            <div id="checklist-view" class="view"></div>
+            <div id="drivers-view" class="view"></div>
+            <div id="vehicles-view" class="view"></div>
+            <div id="tires-view" class="view"></div>
+            <div id="maintenance-view" class="view"></div>
+            <div id="fueling-view" class="view"></div>
+            <div id="service-orders-view" class="view"></div>
+            <div id="reports-view" class="view"></div>
+            <div id="users-view" class="view"></div>
+        </main>
+    </div>
+
+    <div id="checklist-detail-modal" class="modal"></div>
+    <div id="mount-tire-modal" class="modal"></div>
+    <div id="tire-service-modal" class="modal"></div>
+    <div id="service-order-detail-modal" class="modal"></div>
+
+    <script>
+        // --- FUNÇÕES DE UTILIDADE E ARMAZENAMENTO ---
+        const getFromStorage = (key) => JSON.parse(localStorage.getItem(key)) || [];
+        const saveToStorage = (key, data) => localStorage.setItem(key, JSON.stringify(data));
+
+        let tireServiceIdCounter = getFromStorage('tireServiceIdCounter')[0] || 0;
+        let fuelingIdCounter = getFromStorage('fuelingIdCounter')[0] || 0;
+        let maintenanceIdCounter = getFromStorage('maintenanceIdCounter')[0] || 0;
+        let serviceOrderIdCounter = getFromStorage('serviceOrderIdCounter')[0] || 0;
+        let loggedInUser = null;
+
+        const allModules = ['checklist', 'drivers', 'vehicles', 'tires', 'maintenance', 'fueling', 'service-orders', 'reports', 'users'];
+        const moduleTranslations = {
+            'checklist': 'Checklist',
+            'drivers': 'Motoristas',
+            'vehicles': 'Veículos',
+            'tires': 'Pneus',
+            'maintenance': 'Manutenção',
+            'fueling': 'Abastecimento',
+            'service-orders': 'Ordens de Serviço',
+            'reports': 'Relatórios',
+            'users': 'Usuários'
+        };
+
+        const newChecklistItems = [
+            "BUZINA", "CINTO DE SEGURANÇA", "QUEBRA SOL", "RETROVISOR INTERNO", "RETROVISOR LD", "RETROVISOR LE", "LIMPADOR DE PARA-BRISA",
+            "FAROL BAIXO", "FAROL ALTO", "FAROL AUXILIAR", "MEIA LUZ", "LUZ DO TETO", "LUZ DE FREIO", "LUZ DE RÉ", "LUZ DA PLACA",
+            "LUZES DO PAINEL", "LUZ DE SETA LD", "LUZ DE SETA LE", "PISCA ALERTA", "LUZES DO BAÚ", "LUZ INTERNA BAÚ", "TACOGRAFO",
+            "FREIOS", "PNEUS/ESTADO/CALIBRAGEM", "ÁGUA DO RADIADOR", "ÓLEO DO MOTOR", "MACACO", "CHAVE DE RODA", "TRIANGULO DE SINALIZAÇÃO",
+            "EXTINTOR DE INCÊNDIO", "PORTA MOTORISTA", "VIDROS DAS PORTAS", "PORTA DO PASSAGEIRO", "TRAVA DO BAÚ", "TECLADO RASTREADOR",
+            "BANCOS ENCOSTO/ASSENTOS", "PARACHOQUE DIANTEIRO", "PARACHOQUE TRASEIRO", "LATARIA CABINE", "INTERCLIMA", "AR CONDICIONADO",
+            "AR FRIO/QUENTE"
+        ];
+
+        // Função de inicialização
+        window.onload = () => {
+            initializeUsers();
+            setupLoginForm();
+        };
+
+        function initializeUsers() {
+            let users = getFromStorage('users');
+            if (users.length === 0) {
+                const adminUser = {
+                    id: Date.now(),
+                    username: 'admin',
+                    password: '123',
+                    name: 'Administrador',
+                    isAdmin: true,
+                    modules: allModules
+                };
+                saveToStorage('users', [adminUser]);
+            }
+        }
+
+        // --- FUNÇÕES DE LOGIN E LOGOUT ---
+        function setupLoginForm() {
+            const loginForm = document.getElementById('login-form');
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const users = getFromStorage('users');
+                const user = users.find(u => u.username === username && u.password === password);
+                const errorMessage = document.getElementById('login-error');
+
+                if (user) {
+                    loggedInUser = user;
+                    document.getElementById('login-container').style.display = 'none';
+                    document.getElementById('app-container').style.display = 'block';
+                    setupApp();
+                    errorMessage.textContent = '';
+                } else {
+                    errorMessage.textContent = 'Usuário ou senha incorretos.';
+                }
+            });
+        }
+
+        function logout() {
+            loggedInUser = null;
+            document.getElementById('app-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'flex';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('login-error').textContent = '';
+        }
+
+        // --- FUNÇÕES DE INICIALIZAÇÃO E LAYOUT (MODIFICADA) ---
+        function setupApp() {
+            const headerContainer = document.querySelector('.header-container');
+            const logoutBtn = document.createElement('button');
+            logoutBtn.classList.add('logout-btn');
+            logoutBtn.textContent = 'Sair';
+            logoutBtn.onclick = logout;
+            headerContainer.innerHTML = `
+                               <div class="header-title-group">
+                    <h1>Trans Ideal Transportes Ltda</h1>
+                    <p class="header-subtitle">Rogério Gabriel - Gestão de Frota</p>
+                </div>
+            `;
+            headerContainer.appendChild(logoutBtn);
+
+            const tabsContainer = document.querySelector('.tabs');
+            tabsContainer.innerHTML = '';
+            const userModules = loggedInUser.modules;
+
+            userModules.forEach(module => {
+                const tabButton = document.createElement('button');
+                tabButton.classList.add('tab-button');
+                tabButton.textContent = moduleTranslations[module];
+                tabButton.setAttribute('onclick', `showView('${module}')`);
+                tabsContainer.appendChild(tabButton);
+            });
+
+            if (userModules.length > 0) {
+                showView(userModules[0]);
+            }
+        }
+
+        function showView(viewName) {
+            document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+            document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
+            const viewElement = document.getElementById(`${viewName}-view`);
+            if (viewElement) {
+                viewElement.classList.add("active");
+            }
+            const tabButton = document.querySelector(`.tab-button[onclick="showView('${viewName}')"]`);
+            if (tabButton) {
+                tabButton.classList.add("active");
+            }
+            switch (viewName) {
+                case 'checklist': renderChecklistScreen(); break;
+                case 'drivers': renderDriversScreen(); break;
+                case 'vehicles': renderVehiclesScreen(); break;
+                case 'tires': renderTiresScreen(); break;
+                case 'maintenance': renderMaintenanceScreen(); break;
+                case 'fueling': renderFuelingScreen(); break;
+                case 'service-orders': renderServiceOrdersScreen(); break;
+                case 'reports': renderReportsScreen(); break;
+                case 'users': renderUsersScreen(); break; // Novo caso para a tela de usuários
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+        
+        function getDriverNameById(id) {
+            const drivers = getFromStorage('drivers');
+            const driver = drivers.find(d => d.id === id);
+            return driver ? driver.name : "Desconhecido";
+        }
+        
+        function getVehicleModelByPlate(plate) {
+            const vehicles = getFromStorage('vehicles');
+            const vehicle = vehicles.find(v => v.plate === plate);
+            return vehicle ? vehicle.model : "Desconhecido";
+        }
+
+        function populateDriverSelects() {
+            const drivers = getFromStorage('drivers');
+            const selects = document.querySelectorAll('select[id$="-driver-select"]');
+            selects.forEach(select => {
+                select.innerHTML = '<option value="">Selecione um motorista...</option>';
+                if (drivers.length > 0) {
+                    drivers.forEach(driver => {
+                        const option = document.createElement('option');
+                        option.value = driver.id;
+                        option.textContent = driver.name;
+                        select.appendChild(option);
+                    });
+                    select.disabled = false;
+                } else {
+                    select.innerHTML = '<option value="">Nenhum motorista cadastrado</option>';
+                    select.disabled = true;
+                }
+            });
+        }
+
+        function populateVehicleSelects() {
+            const vehicles = getFromStorage('vehicles');
+            const selects = document.querySelectorAll('select[id$="-vehicle-plate"]');
+            selects.forEach(select => {
+                select.innerHTML = '<option value="">Selecione um veículo...</option>';
+                if (vehicles.length > 0) {
+                    vehicles.forEach(vehicle => {
+                        const option = document.createElement('option');
+                        option.value = vehicle.plate;
+                        option.textContent = `${vehicle.plate} - ${vehicle.model}`;
+                        select.appendChild(option);
+                    });
+                    select.disabled = false;
+                } else {
+                    select.innerHTML = '<option value="">Nenhum veículo cadastrado</option>';
+                    select.disabled = true;
+                }
+            });
+        }
+
+        function populateTireSelects() {
+            const tires = getFromStorage('tires');
+            const selects = document.querySelectorAll('select[id$="-tire-id"]');
+            selects.forEach(select => {
+                select.innerHTML = '<option value="">Selecione um pneu...</option>';
+                const availableTires = tires.filter(t => t.status === 'Em Estoque' || t.status === 'Montado');
+                if (availableTires.length > 0) {
+                    availableTires.forEach(tire => {
+                        const option = document.createElement('option');
+                        option.value = tire.id;
+                        option.textContent = `${tire.brand} ${tire.model} - ${tire.serialNumber}`;
+                        select.appendChild(option);
+                    });
+                    select.disabled = false;
+                } else {
+                    select.innerHTML = '<option value="">Nenhum pneu disponível</option>';
+                    select.disabled = true;
+                }
+            });
+        }
+        
+        function populateTireStockSelects() {
+            const tires = getFromStorage('tires');
+            const selects = document.querySelectorAll('select[id$="-tire-stock-id"]');
+            selects.forEach(select => {
+                select.innerHTML = '<option value="">Selecione um pneu...</option>';
+                const stockTires = tires.filter(t => t.status === 'Em Estoque');
+                if (stockTires.length > 0) {
+                    stockTires.forEach(tire => {
+                        const option = document.createElement('option');
+                        option.value = tire.id;
+                        option.textContent = `${tire.brand} ${tire.model} - ${tire.serialNumber}`;
+                        select.appendChild(option);
+                    });
+                    select.disabled = false;
+                } else {
+                    select.innerHTML = '<option value="">Nenhum pneu em estoque</option>';
+                    select.disabled = true;
+                }
+            });
+        }
+
+        function populateVehicleMountedTires(vehiclePlate) {
+            const tires = getFromStorage('tires');
+            const tbody = document.getElementById('vehicle-mounted-tires-body');
+            tbody.innerHTML = '';
+            const mountedTires = tires.filter(t => t.status === 'Montado' && t.vehiclePlate === vehiclePlate);
+            if (mountedTires.length > 0) {
+                mountedTires.forEach(tire => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${tire.brand} ${tire.model}</td>
+                        <td>${tire.serialNumber}</td>
+                        <td>${tire.position}</td>
+                        <td>${tire.mileageMounted} km</td>
+                        <td class="action-column">
+                            ${loggedInUser.isAdmin ? `<button class="action-button danger" onclick="unmountTire('${tire.id}')">Desmontar</button>` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5">Nenhum pneu montado neste veículo.</td></tr>`;
+            }
+        }
+        
+        // --- FUNÇÕES DE MÓDULOS ---
+
+        // ################### MÓDULO DE CHECKLIST ###################
+        function renderChecklistScreen() {
+            const checklistView = document.getElementById('checklist-view');
+            const drivers = getFromStorage('drivers');
+            const vehicles = getFromStorage('vehicles');
+            if (drivers.length === 0 || vehicles.length === 0) {
+                checklistView.innerHTML = `<div class="checklist-form-card"><h2>Lançar Checklist</h2><p style="color: var(--danger-color); font-weight: bold;">Atenção: Para utilizar o checklist, você precisa ter motoristas e veículos cadastrados. Por favor, acesse as abas "Motoristas" e "Veículos" para realizar os cadastros.</p></div>`;
+                return;
+            }
+            checklistView.innerHTML = `
+                <div class="checklist-form-card">
+                    <h2>Lançar Checklist</h2><hr>
+                    <form id="checklist-form">
+                        <input type="hidden" id="editing-checklist-id">
+                        <div class="form-group"><label>Motorista:</label><select id="checklist-driver-select" required></select></div>
+                        <div class="form-group"><label>Veículo:</label><select id="checklist-vehicle-plate" required></select></div>
+                        <div class="form-group"><label>Data:</label><input type="date" id="checklist-date" required></div>
+                        <hr style="margin-top: 25px; margin-bottom: 25px; border-color: #eee;">
+                        <h3>Itens do Checklist</h3>
+                        <div class="checklist-table-wrapper"><table class="checklist-table"><thead><tr><th>Descrição</th><th>Condições de Uso</th><th>Comentários/Conclusões</th></tr></thead><tbody id="checklist-items-body"></tbody></table></div>
+                        <div class="form-group" style="margin-top: 25px;"><label>Observações Gerais:</label><textarea id="observations" rows="4"></textarea></div>
+                        <div id="checklist-form-actions" class="form-actions"><button type="submit" class="submit-btn primary">Salvar Checklist</button></div>
+                    </form>
+                </div>
+                <div class="checklist-history-card">
+                    <h2>Histórico de Checklists</h2><hr>
+                    <div class="report-filters">
+                        <div class="form-group"><label for="history-vehicle-filter">Filtrar por Veículo:</label><select id="history-vehicle-filter"></select></div>
+                        <div class="form-group"><label for="history-start-date-filter">Data de Início:</label><input type="date" id="history-start-date-filter"></div>
+                        <div class="form-group"><label for="history-end-date-filter">Data de Fim:</label><input type="date" id="history-end-date-filter"></div>
+                        <button class="submit-btn primary" onclick="displayChecklistHistory()">Filtrar</button>
+                    </div>
+                    <table id="checklist-history-table">
+                        <thead><tr><th>Data</th><th>Veículo</th><th>Motorista</th><th>Status</th><th class="action-column">Ações</th></tr></thead>
+                        <tbody id="checklist-history-body"></tbody>
+                    </table>
+                    <div class="report-actions"><button class="submit-btn info" onclick="printChecklistHistory()">Imprimir</button></div>
+                </div>
+            `;
+            const checklistForm = document.getElementById('checklist-form');
+            if (loggedInUser.isAdmin === false) {
+                // Se o usuário não é admin, desabilita os campos e o formulário
+                const elementsToDisable = checklistForm.querySelectorAll('input, select, textarea');
+                elementsToDisable.forEach(el => el.disabled = false);
+            }
+            populateDriverSelects();
+            populateVehicleSelects();
+            populateChecklistItems();
+            setupChecklistFormListeners();
+            displayChecklistHistory();
+            populateHistoryFilters();
+        }
+
+        function populateChecklistItems() {
+            const tbody = document.getElementById('checklist-items-body');
+            tbody.innerHTML = '';
+            newChecklistItems.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item}</td>
+                    <td class="conditions-cell">
+                        <button type="button" class="status-btn" data-status="bom">BOM</button>
+                        <button type="button" class="status-btn" data-status="regular">REGULAR</button>
+                        <button type="button" class="status-btn" data-status="ruim">RUIM</button>
+                    </td>
+                    <td class="comments-cell"><textarea rows="1" class="checklist-comment"></textarea></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function setupChecklistFormListeners() {
+            const checklistForm = document.getElementById('checklist-form');
+            if (!checklistForm) return;
+            
+            checklistForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveChecklist();
+            });
+
+            document.getElementById('checklist-items-body').addEventListener('click', (e) => {
+                const button = e.target.closest('.status-btn');
+                if (button) {
+                    const row = button.closest('tr');
+                    const allButtons = row.querySelectorAll('.status-btn');
+                    allButtons.forEach(btn => btn.classList.remove('selected-good', 'selected-regular', 'selected-bad'));
+                    if (button.dataset.status === 'bom') {
+                        button.classList.add('selected-good');
+                    } else if (button.dataset.status === 'regular') {
+                        button.classList.add('selected-regular');
+                    } else {
+                        button.classList.add('selected-bad');
+                    }
+                }
+            });
+        }
+
+        function saveChecklist() {
+            const form = document.getElementById('checklist-form');
+            const checklistId = document.getElementById('editing-checklist-id').value;
+            const driverId = document.getElementById('checklist-driver-select').value;
+            const vehiclePlate = document.getElementById('checklist-vehicle-plate').value;
+            const date = document.getElementById('checklist-date').value;
+            const observations = document.getElementById('observations').value;
+            const items = [];
+            const rows = document.getElementById('checklist-items-body').querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const description = row.querySelector('td:nth-child(1)').textContent;
+                const statusBtn = row.querySelector('.status-btn.selected-good, .status-btn.selected-regular, .status-btn.selected-bad');
+                const status = statusBtn ? statusBtn.dataset.status : '';
+                const comment = row.querySelector('.checklist-comment').value;
+                items.push({ description, status, comment });
+            });
+
+            const newChecklist = {
+                id: checklistId || Date.now(),
+                driverId: driverId,
+                vehiclePlate: vehiclePlate,
+                date: date,
+                items: items,
+                observations: observations
+            };
+
+            let checklists = getFromStorage('checklists');
+            if (checklistId) {
+                const index = checklists.findIndex(c => c.id == checklistId);
+                if (index > -1) {
+                    checklists[index] = newChecklist;
+                }
+            } else {
+                checklists.push(newChecklist);
+            }
+            saveToStorage('checklists', checklists);
+            alert('Checklist salvo com sucesso!');
+            form.reset();
+            populateChecklistItems();
+            displayChecklistHistory();
+        }
+
+        function displayChecklistHistory() {
+            const tbody = document.getElementById('checklist-history-body');
+            const historyVehicleFilter = document.getElementById('history-vehicle-filter').value;
+            const historyStartDateFilter = document.getElementById('history-start-date-filter').value;
+            const historyEndDateFilter = document.getElementById('history-end-date-filter').value;
+
+            let checklists = getFromStorage('checklists');
+
+            checklists = checklists.filter(c => {
+                const checklistDate = new Date(c.date);
+                const startDate = historyStartDateFilter ? new Date(historyStartDateFilter) : null;
+                const endDate = historyEndDateFilter ? new Date(historyEndDateFilter) : null;
+                const matchesVehicle = !historyVehicleFilter || c.vehiclePlate === historyVehicleFilter;
+                const matchesDate = (!startDate || checklistDate >= startDate) && (!endDate || checklistDate <= endDate);
+                return matchesVehicle && matchesDate;
+            });
+            
+            checklists.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            tbody.innerHTML = '';
+            if (checklists.length > 0) {
+                checklists.forEach(checklist => {
+                    const hasRuim = checklist.items.some(item => item.status === 'ruim');
+                    const hasRegular = checklist.items.some(item => item.status === 'regular');
+                    const statusClass = hasRuim ? 'status-nok' : (hasRegular ? 'status-aberta' : 'status-ok');
+                    const statusText = hasRuim ? 'Com Pendência' : (hasRegular ? 'Atenção' : 'OK');
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date(checklist.date).toLocaleDateString()}</td>
+                        <td>${checklist.vehiclePlate}</td>
+                        <td>${getDriverNameById(checklist.driverId)}</td>
+                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td class="action-column">
+                            <button class="action-button info" onclick="viewChecklistDetail(${checklist.id})">Visualizar</button>
+                            ${loggedInUser.isAdmin ? `<button class="action-button danger" onclick="deleteChecklist(${checklist.id})">Excluir</button>` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5">Nenhum checklist encontrado.</td></tr>`;
+            }
+        }
+        
+        function populateHistoryFilters() {
+            const vehicles = getFromStorage('vehicles');
+            const historyVehicleSelect = document.getElementById('history-vehicle-filter');
+            historyVehicleSelect.innerHTML = '<option value="">Todos os Veículos</option>';
+            vehicles.forEach(vehicle => {
+                const option = document.createElement('option');
+                option.value = vehicle.plate;
+                option.textContent = `${vehicle.plate} - ${vehicle.model}`;
+                historyVehicleSelect.appendChild(option);
+            });
+        }
+
+        function viewChecklistDetail(checklistId) {
+            const checklists = getFromStorage('checklists');
+            const checklist = checklists.find(c => c.id == checklistId);
+            if (!checklist) return;
+
+            const modal = document.getElementById('checklist-detail-modal');
+            let itemsHtml = ``;
+            checklist.items.forEach(item => {
+                const statusClass = item.status === 'bom' ? 'status-ok' : (item.status === 'regular' ? 'status-aberta' : 'status-nok');
+                const statusText = item.status.toUpperCase();
+                itemsHtml += `
+                    <tr>
+                        <td>${item.description}</td>
+                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td>${item.comment || '-'}</td>
+                    </tr>
+                `;
+            });
+
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Detalhes do Checklist</h3>
+                        <button type="button" class="modal-close" onclick="closeModal('checklist-detail-modal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Motorista:</strong> ${getDriverNameById(checklist.driverId)}</p>
+                        <p><strong>Veículo:</strong> ${checklist.vehiclePlate}</p>
+                        <p><strong>Data:</strong> ${new Date(checklist.date).toLocaleDateString()}</p>
+                        <hr>
+                        <h4>Itens Verificados</h4>
+                        <table class="checklist-table">
+                            <thead><tr><th>Item</th><th>Status</th><th>Comentários</th></tr></thead>
+                            <tbody>${itemsHtml}</tbody>
+                        </table>
+                        <hr>
+                        <p><strong>Observações:</strong> ${checklist.observations || 'Nenhuma observação.'}</p>
+                    </div>
+                    <div class="form-actions">
+                        <button class="submit-btn info" onclick="printChecklistDetail(${checklistId})">Imprimir</button>
+                    </div>
+                </div>
+            `;
+            modal.style.display = 'flex';
+        }
+        
+        function printChecklistDetail(checklistId) {
+            const checklists = getFromStorage('checklists');
+            const checklist = checklists.find(c => c.id == checklistId);
+            if (!checklist) return;
+
+            const printWindow = window.open('', '_blank');
+            const printContent = `
+                <html>
+                <head>
+                    <title>Checklist - ${checklist.vehiclePlate} - ${new Date(checklist.date).toLocaleDateString()}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; font-size: 12px; margin: 30px; }
+                        h1, h2, h3 { color: #1a237e; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+                        th { background-color: #f0f4f8; }
+                        .status-ok { color: #388e3c; font-weight: bold; }
+                        .status-aberta { color: #ff9800; font-weight: bold; }
+                        .status-nok { color: #d32f2f; font-weight: bold; }
+                        p { margin: 5px 0; }
+                    </style>
+                </head>
+                <body>
+                    <h2>Checklist de Veículo</h2>
+                    <p><strong>Motorista:</strong> ${getDriverNameById(checklist.driverId)}</p>
+                    <p><strong>Veículo:</strong> ${checklist.vehiclePlate}</p>
+                    <p><strong>Data:</strong> ${new Date(checklist.date).toLocaleDateString()}</p>
+                    <hr>
+                    <h3>Itens Verificados</h3>
+                    <table>
+                        <thead><tr><th>Item</th><th>Status</th><th>Comentários</th></tr></thead>
+                        <tbody>
+                            ${checklist.items.map(item => `
+                                <tr>
+                                    <td>${item.description}</td>
+                                    <td><span class="status-${item.status === 'bom' ? 'ok' : (item.status === 'regular' ? 'aberta' : 'nok')}">${item.status.toUpperCase()}</span></td>
+                                    <td>${item.comment || '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <hr>
+                    <h3>Observações Gerais:</h3>
+                    <p>${checklist.observations || 'Nenhuma observação.'}</p>
+                    <br><br>
+                    <p>_________________________</p>
+                    <p>Assinatura do Motorista</p>
+                </body>
+                </html>
+            `;
+
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        }
+
+        function deleteChecklist(checklistId) {
+            if (confirm('Tem certeza que deseja excluir este checklist?')) {
+                let checklists = getFromStorage('checklists');
+                checklists = checklists.filter(c => c.id != checklistId);
+                saveToStorage('checklists', checklists);
+                displayChecklistHistory();
+                alert('Checklist excluído com sucesso!');
+            }
+        }
+        
+        function printChecklistHistory() {
+            const table = document.getElementById('checklist-history-table');
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>Histórico de Checklists</title>');
+            printWindow.document.write('<style>body{font-family: Arial, sans-serif;} table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #000; padding: 8px; text-align: left; } th { background-color: #f2f2f2; } .status-ok { color: green; } .status-nok { color: red; } .status-aberta { color: orange; }</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write('<h2>Histórico de Checklists</h2>');
+            printWindow.document.write(table.outerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+        // ################### MÓDULO DE MOTORISTAS ###################
+
+        function renderDriversScreen() {
+            const driversView = document.getElementById('drivers-view');
+            driversView.innerHTML = `
+                <div class="driver-form-card">
+                    <h2>Cadastrar/Atualizar Motorista</h2><hr>
+                    <form id="driver-form">
+                        <input type="hidden" id="editing-driver-id">
+                        <div class="form-group"><label>Nome Completo:</label><input type="text" id="driver-name" required></div>
+                        <div class="form-group"><label>CPF:</label><input type="text" id="driver-cpf" required></div>
+                        <div class="form-group"><label>CNH:</label><input type="text" id="driver-cnh" required></div>
+                        <div class="form-group"><label>Data de Nascimento:</label><input type="date" id="driver-dob" required></div>
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn primary">Salvar Motorista</button>
+                            <button type="button" class="submit-btn cancel-btn" onclick="clearDriverForm()">Limpar</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="driver-history-card">
+                    <h2>Lista de Motoristas</h2><hr>
+                    <table id="drivers-table">
+                        <thead><tr><th>Nome</th><th>CPF</th><th>CNH</th><th>Data Nasc.</th><th class="action-column">Ações</th></tr></thead>
+                        <tbody id="drivers-table-body"></tbody>
+                    </table>
+                </div>
+            `;
+            const driverForm = document.getElementById('driver-form');
+            if (loggedInUser.isAdmin === false) {
+                driverForm.style.display = 'none';
+                const tableCard = document.querySelector('.driver-history-card');
+                const tableTitle = tableCard.querySelector('h2');
+                tableTitle.textContent = 'Motoristas Cadastrados';
+            }
+            displayDrivers();
+            setupDriverFormListener();
+        }
+
+        function setupDriverFormListener() {
+            const driverForm = document.getElementById('driver-form');
+            if (!driverForm) return;
+            driverForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveDriver();
+            });
+        }
+
+        function saveDriver() {
+            const id = document.getElementById('editing-driver-id').value;
+            const name = document.getElementById('driver-name').value;
+            const cpf = document.getElementById('driver-cpf').value;
+            const cnh = document.getElementById('driver-cnh').value;
+            const dob = document.getElementById('driver-dob').value;
+            
+            const driver = {
+                id: id ? id : Date.now(),
+                name,
+                cpf,
+                cnh,
+                dob
+            };
+
+            let drivers = getFromStorage('drivers');
+            if (id) {
+                const index = drivers.findIndex(d => d.id == id);
+                if (index > -1) {
+                    drivers[index] = driver;
+                }
+            } else {
+                drivers.push(driver);
+            }
+            saveToStorage('drivers', drivers);
+            alert('Motorista salvo com sucesso!');
+            clearDriverForm();
+            displayDrivers();
+        }
+
+        function displayDrivers() {
+            const tbody = document.getElementById('drivers-table-body');
+            let drivers = getFromStorage('drivers');
+            drivers.sort((a, b) => a.name.localeCompare(b.name));
+            tbody.innerHTML = '';
+            if (drivers.length > 0) {
+                drivers.forEach(driver => {
+                    const row = document.createElement('tr');
+                    const actionsHtml = loggedInUser.isAdmin ? `
+                        <button class="action-button info" onclick="editDriver(${driver.id})">Editar</button>
+                        <button class="action-button danger" onclick="deleteDriver(${driver.id})">Excluir</button>
+                    ` : 'Nenhuma ação disponível';
+                    row.innerHTML = `
+                        <td>${driver.name}</td>
+                        <td>${driver.cpf}</td>
+                        <td>${driver.cnh}</td>
+                        <td>${new Date(driver.dob).toLocaleDateString()}</td>
+                        <td class="action-column">${actionsHtml}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5">Nenhum motorista cadastrado.</td></tr>`;
+            }
+        }
+
+        function editDriver(id) {
+            const drivers = getFromStorage('drivers');
+            const driver = drivers.find(d => d.id == id);
+            if (!driver) return;
+            document.getElementById('editing-driver-id').value = driver.id;
+            document.getElementById('driver-name').value = driver.name;
+            document.getElementById('driver-cpf').value = driver.cpf;
+            document.getElementById('driver-cnh').value = driver.cnh;
+            document.getElementById('driver-dob').value = driver.dob;
+        }
+
+        function deleteDriver(id) {
+            if (confirm('Tem certeza que deseja excluir este motorista?')) {
+                let drivers = getFromStorage('drivers');
+                drivers = drivers.filter(d => d.id != id);
+                saveToStorage('drivers', drivers);
+                displayDrivers();
+                alert('Motorista excluído com sucesso!');
+            }
+        }
+        
+        function clearDriverForm() {
+            document.getElementById('driver-form').reset();
+            document.getElementById('editing-driver-id').value = '';
+        }
+
+        // ################### MÓDULO DE VEÍCULOS ###################
+
+        function renderVehiclesScreen() {
+            const vehiclesView = document.getElementById('vehicles-view');
+            vehiclesView.innerHTML = `
+                <div class="vehicle-form-card">
+                    <h2>Cadastrar/Atualizar Veículo</h2><hr>
+                    <form id="vehicle-form">
+                        <input type="hidden" id="editing-vehicle-plate">
+                        <div class="form-group"><label>Placa:</label><input type="text" id="vehicle-plate" required></div>
+                        <div class="form-group"><label>Marca:</label><input type="text" id="vehicle-make" required></div>
+                        <div class="form-group"><label>Modelo:</label><input type="text" id="vehicle-model" required></div>
+                        <div class="form-group"><label>Ano:</label><input type="number" id="vehicle-year" required></div>
+                        <div class="form-group"><label>Quilometragem Inicial:</label><input type="number" id="vehicle-mileage" required></div>
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn primary">Salvar Veículo</button>
+                            <button type="button" class="submit-btn cancel-btn" onclick="clearVehicleForm()">Limpar</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="vehicle-history-card">
+                    <h2>Lista de Veículos</h2><hr>
+                    <table id="vehicles-table">
+                        <thead><tr><th>Placa</th><th>Marca/Modelo</th><th>Ano</th><th>KM Atual</th><th class="action-column">Ações</th></tr></thead>
+                        <tbody id="vehicles-table-body"></tbody>
+                    </table>
+                </div>
+            `;
+            const vehicleForm = document.getElementById('vehicle-form');
+            if (loggedInUser.isAdmin === false) {
+                vehicleForm.style.display = 'none';
+                const tableCard = document.querySelector('.vehicle-history-card');
+                const tableTitle = tableCard.querySelector('h2');
+                tableTitle.textContent = 'Veículos Cadastrados';
+            }
+            displayVehicles();
+            setupVehicleFormListener();
+        }
+
+        function setupVehicleFormListener() {
+            const vehicleForm = document.getElementById('vehicle-form');
+            if (!vehicleForm) return;
+            vehicleForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveVehicle();
+            });
+        }
+        
+        function saveVehicle() {
+            const oldPlate = document.getElementById('editing-vehicle-plate').value;
+            const plate = document.getElementById('vehicle-plate').value.toUpperCase();
+            const make = document.getElementById('vehicle-make').value;
+            const model = document.getElementById('vehicle-model').value;
+            const year = document.getElementById('vehicle-year').value;
+            const mileage = document.getElementById('vehicle-mileage').value;
+            
+            const vehicle = {
+                plate: plate,
+                make,
+                model,
+                year,
+                mileage: parseFloat(mileage)
+            };
+
+            let vehicles = getFromStorage('vehicles');
+            let isUpdate = false;
+            
+            if (oldPlate) {
+                const index = vehicles.findIndex(v => v.plate === oldPlate);
+                if (index > -1) {
+                    vehicles[index] = vehicle;
+                    isUpdate = true;
+                }
+            } else {
+                // Previne placas duplicadas no cadastro
+                const existingVehicle = vehicles.find(v => v.plate === plate);
+                if (existingVehicle) {
+                    alert('Já existe um veículo cadastrado com esta placa.');
+                    return;
+                }
+                vehicles.push(vehicle);
+            }
+            
+            saveToStorage('vehicles', vehicles);
+            alert(`Veículo ${isUpdate ? 'atualizado' : 'cadastrado'} com sucesso!`);
+            clearVehicleForm();
+            displayVehicles();
+        }
+
+        function displayVehicles() {
+            const tbody = document.getElementById('vehicles-table-body');
+            let vehicles = getFromStorage('vehicles');
+            vehicles.sort((a, b) => a.plate.localeCompare(b.plate));
+            tbody.innerHTML = '';
+            if (vehicles.length > 0) {
+                vehicles.forEach(vehicle => {
+                    const actionsHtml = loggedInUser.isAdmin ? `
+                        <button class="action-button info" onclick="editVehicle('${vehicle.plate}')">Editar</button>
+                        <button class="action-button danger" onclick="deleteVehicle('${vehicle.plate}')">Excluir</button>
+                    ` : 'Nenhuma ação disponível';
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${vehicle.plate}</td>
+                        <td>${vehicle.make} / ${vehicle.model}</td>
+                        <td>${vehicle.year}</td>
+                        <td>${vehicle.mileage.toLocaleString('pt-BR')} km</td>
+                        <td class="action-column">${actionsHtml}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5">Nenhum veículo cadastrado.</td></tr>`;
+            }
+        }
+
+        function editVehicle(plate) {
+            const vehicles = getFromStorage('vehicles');
+            const vehicle = vehicles.find(v => v.plate === plate);
+            if (!vehicle) return;
+            document.getElementById('editing-vehicle-plate').value = vehicle.plate;
+            document.getElementById('vehicle-plate').value = vehicle.plate;
+            document.getElementById('vehicle-make').value = vehicle.make;
+            document.getElementById('vehicle-model').value = vehicle.model;
+            document.getElementById('vehicle-year').value = vehicle.year;
+            document.getElementById('vehicle-mileage').value = vehicle.mileage;
+            document.getElementById('vehicle-plate').disabled = true; // Impede a alteração da placa durante a edição
+        }
+        
+        function deleteVehicle(plate) {
+            if (confirm('Tem certeza que deseja excluir este veículo?')) {
+                let vehicles = getFromStorage('vehicles');
+                vehicles = vehicles.filter(v => v.plate !== plate);
+                saveToStorage('vehicles', vehicles);
+                displayVehicles();
+                alert('Veículo excluído com sucesso!');
+            }
+        }
+
+        function clearVehicleForm() {
+            document.getElementById('vehicle-form').reset();
+            document.getElementById('editing-vehicle-plate').value = '';
+            document.getElementById('vehicle-plate').disabled = false;
+        }
+
+        // ################### MÓDULO DE PNEUS ###################
+        function renderTiresScreen() {
+            const tiresView = document.getElementById('tires-view');
+            tiresView.innerHTML = `
+                <div id="tire-actions-container">
+                    <div class="action-card">
+                        <h3>Lançamento de Pneu</h3>
+                        <p>Adicione um pneu novo ao estoque.</p>
+                        <button class="action-btn primary" onclick="showTireForm()">Lançar Pneu</button>
+                    </div>
+                    <div class="action-card">
+                        <h3>Montagem de Pneu</h3>
+                        <p>Registre a montagem de um pneu em um veículo.</p>
+                        <button class="action-btn info" onclick="showMountTireModal()">Montar Pneu</button>
+                    </div>
+                    <div class="action-card">
+                        <h3>Desmontagem de Pneu</h3>
+                        <p>Registre a desmontagem de um pneu de um veículo.</p>
+                        <button class="action-btn secondary" onclick="showUnmountTireForm()">Desmontar Pneu</button>
+                    </div>
+                </div>
+                <div class="tire-form-card" id="tire-form-container" style="display: none;">
+                    <h2>Cadastrar Pneu</h2><hr>
+                    <form id="tire-form">
+                        <input type="hidden" id="editing-tire-id">
+                        <div class="form-group"><label>Número de Série:</label><input type="text" id="tire-serial" required></div>
+                        <div class="form-group"><label>Marca:</label><input type="text" id="tire-brand" required></div>
+                        <div class="form-group"><label>Modelo:</label><input type="text" id="tire-model" required></div>
+                        <div class="form-group"><label>KM no Lançamento:</label><input type="number" id="tire-km-launch" required></div>
+                        <div class="form-group"><label>Vida Total (KM):</label><input type="number" id="tire-lifetime" required></div>
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn primary">Salvar Pneu</button>
+                            <button type="button" class="submit-btn cancel-btn" onclick="clearTireForm()">Limpar</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="tire-history-card">
+                    <h2>Controle de Pneus</h2><hr>
+                    <table id="tires-table">
+                        <thead><tr><th>Nº de Série</th><th>Marca/Modelo</th><th>KM Atual</th><th>Status</th><th>Veículo</th><th class="action-column">Ações</th></tr></thead>
+                        <tbody id="tires-table-body"></tbody>
+                    </table>
+                </div>
+                <div id="mount-tire-modal" class="modal"></div>
+            `;
+            const tireForm = document.getElementById('tire-form-container');
+            if (loggedInUser.isAdmin === false) {
+                tireForm.style.display = 'none';
+            }
+            displayTires();
+            setupTireFormListener();
+        }
+
+        function showTireForm() {
+            document.getElementById('tire-form-container').style.display = 'block';
+            document.getElementById('tire-form').reset();
+            document.getElementById('editing-tire-id').value = '';
+        }
+        
+        function showMountTireModal() {
+            const vehicles = getFromStorage('vehicles');
+            const stockTires = getFromStorage('tires').filter(t => t.status === 'Em Estoque');
+            
+            if (vehicles.length === 0 || stockTires.length === 0) {
+                alert('É necessário ter veículos e pneus em estoque para realizar a montagem.');
+                return;
+            }
+
+            const modal = document.getElementById('mount-tire-modal');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Montar Pneu em Veículo</h3>
+                        <button type="button" class="modal-close" onclick="closeModal('mount-tire-modal')">&times;</button>
+                    </div>
+                    <form id="mount-tire-form">
+                        <div class="form-group"><label>Veículo:</label><select id="mount-vehicle-plate" required></select></div>
+                        <div class="form-group"><label>Pneu em Estoque:</label><select id="mount-tire-stock-id" required></select></div>
+                        <div class="form-group"><label>Posição:</label>
+                            <select id="mount-tire-position" required>
+                                <option value="">Selecione a posição...</option>
+                                <option value="Eixo 1 LE">Eixo 1 LE</option>
+                                <option value="Eixo 1 LD">Eixo 1 LD</option>
+                                <option value="Eixo 2 LE">Eixo 2 LE</option>
+                                <option value="Eixo 2 LD">Eixo 2 LD</option>
+                                <option value="Eixo 2 LE Interno">Eixo 2 LE Interno</option>
+                                <option value="Eixo 2 LD Interno">Eixo 2 LD Interno</option>
+                                <option value="Estepe">Estepe</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>KM do Veículo na Montagem:</label><input type="number" id="mount-km" required></div>
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn primary">Confirmar Montagem</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            modal.style.display = 'flex';
+            populateVehicleSelects();
+            populateTireStockSelects();
+            document.getElementById('mount-tire-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                mountTire();
+            });
+        }
+        
+        function showUnmountTireForm() {
+             const vehicles = getFromStorage('vehicles');
+            
+            if (vehicles.length === 0) {
+                alert('É necessário ter veículos cadastrados para desmontar pneus.');
+                return;
+            }
+
+            const modal = document.getElementById('mount-tire-modal'); // Reutilizando o modal para exibir a lista
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Desmontar Pneu de um Veículo</h3>
+                        <button type="button" class="modal-close" onclick="closeModal('mount-tire-modal')">&times;</button>
+                    </div>
+                    <form id="unmount-tire-form">
+                        <div class="form-group"><label>Selecione o Veículo:</label><select id="unmount-vehicle-plate" required></select></div>
+                        <div id="unmount-options-container" style="display:none; margin-top: 20px;">
+                            <h4>Pneus Montados</h4>
+                            <div class="form-group"><label>Pneu:</label><select id="unmount-tire-id" required></select></div>
+                            <div class="form-group"><label>KM do Veículo na Desmontagem:</label><input type="number" id="unmount-km" required></div>
+                            <div class="form-actions"><button type="submit" class="submit-btn primary">Confirmar Desmontagem</button></div>
+                        </div>
+                    </form>
+                </div>
+            `;
+            modal.style.display = 'flex';
+
+            const unmountVehicleSelect = document.getElementById('unmount-vehicle-plate');
+            const vehiclesWithTires = getFromStorage('tires').filter(t => t.status === 'Montado').map(t => t.vehiclePlate);
+            const uniqueVehicles = [...new Set(vehiclesWithTires)];
+
+            unmountVehicleSelect.innerHTML = '<option value="">Selecione um veículo...</option>';
+            vehicles.filter(v => uniqueVehicles.includes(v.plate)).forEach(vehicle => {
+                const option = document.createElement('option');
+                option.value = vehicle.plate;
+                option.textContent = `${vehicle.plate} - ${vehicle.model}`;
+                unmountVehicleSelect.appendChild(option);
+            });
+
+            unmountVehicleSelect.addEventListener('change', (e) => {
+                const vehiclePlate = e.target.value;
+                const unmountOptionsContainer = document.getElementById('unmount-options-container');
+                const unmountTireSelect = document.getElementById('unmount-tire-id');
+                if (vehiclePlate) {
+                    const mountedTires = getFromStorage('tires').filter(t => t.status === 'Montado' && t.vehiclePlate === vehiclePlate);
+                    unmountTireSelect.innerHTML = '<option value="">Selecione o pneu a ser desmontado...</option>';
+                    mountedTires.forEach(tire => {
+                        const option = document.createElement('option');
+                        option.value = tire.id;
+                        option.textContent = `${tire.serialNumber} - ${tire.position}`;
+                        unmountTireSelect.appendChild(option);
+                    });
+                    unmountOptionsContainer.style.display = 'block';
+                } else {
+                    unmountOptionsContainer.style.display = 'none';
+                }
+            });
+
+            document.getElementById('unmount-tire-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                unmountTireFromForm();
+            });
+        }
+        
+        function setupTireFormListener() {
+            const tireForm = document.getElementById('tire-form');
+            if (!tireForm) return;
+            tireForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveTire();
+            });
+        }
+        
+        function saveTire() {
+            const id = document.getElementById('editing-tire-id').value;
+            const serialNumber = document.getElementById('tire-serial').value.toUpperCase();
+            const brand = document.getElementById('tire-brand').value;
+            const model = document.getElementById('tire-model').value;
+            const mileageLaunch = document.getElementById('tire-km-launch').value;
+            const lifetime = document.getElementById('tire-lifetime').value;
+            
+            let tires = getFromStorage('tires');
+            if (!id) {
+                // Previne pneus duplicados
+                const existingTire = tires.find(t => t.serialNumber === serialNumber);
+                if (existingTire) {
+                    alert('Já existe um pneu com este número de série.');
+                    return;
+                }
+            }
+
+            const tire = {
+                id: id ? id : Date.now(),
+                serialNumber,
+                brand,
+                model,
+                mileage: parseFloat(mileageLaunch),
+                mileageLaunch: parseFloat(mileageLaunch),
+                mileageMounted: 0,
+                lifetime: parseFloat(lifetime),
+                status: 'Em Estoque',
+                vehiclePlate: '',
+                position: '',
+                history: []
+            };
+
+            if (id) {
+                const index = tires.findIndex(t => t.id == id);
+                if (index > -1) {
+                    // Update the tire, but keep existing vehicle/status info
+                    tires[index] = { ...tires[index], ...tire, mileageMounted: tires[index].mileageMounted, vehiclePlate: tires[index].vehiclePlate, position: tires[index].position, status: tires[index].status };
+                }
+            } else {
+                tires.push(tire);
+            }
+            
+            saveToStorage('tires', tires);
+            alert('Pneu salvo com sucesso!');
+            clearTireForm();
+            displayTires();
+        }
+
+        function mountTire() {
+            const vehiclePlate = document.getElementById('mount-vehicle-plate').value;
+            const tireId = document.getElementById('mount-tire-stock-id').value;
+            const position = document.getElementById('mount-tire-position').value;
+            const mileage = parseFloat(document.getElementById('mount-km').value);
+            
+            if (!vehiclePlate || !tireId || !position || isNaN(mileage)) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+
+            let tires = getFromStorage('tires');
+            let vehicles = getFromStorage('vehicles');
+            const tireIndex = tires.findIndex(t => t.id == tireId);
+            const vehicleIndex = vehicles.findIndex(v => v.plate === vehiclePlate);
+            
+            if (tireIndex === -1 || vehicleIndex === -1) {
+                alert('Pneu ou veículo não encontrado.');
+                return;
+            }
+
+            // Update tire properties
+            tires[tireIndex].status = 'Montado';
+            tires[tireIndex].vehiclePlate = vehiclePlate;
+            tires[tireIndex].position = position;
+            tires[tireIndex].mileageMounted = mileage;
+
+            // Update vehicle mileage if new mileage is greater
+            if (mileage > vehicles[vehicleIndex].mileage) {
+                vehicles[vehicleIndex].mileage = mileage;
+            }
+
+            // Add history entry
+            tires[tireIndex].history.push({
+                type: 'Montagem',
+                date: new Date().toISOString().split('T')[0],
+                vehiclePlate,
+                position,
+                mileage
+            });
+            
+            saveToStorage('tires', tires);
+            saveToStorage('vehicles', vehicles);
+            alert('Pneu montado com sucesso!');
+            closeModal('mount-tire-modal');
+            displayTires();
+        }
+        
+        function unmountTireFromForm() {
+            const tireId = document.getElementById('unmount-tire-id').value;
+            const mileage = parseFloat(document.getElementById('unmount-km').value);
+            
+            if (!tireId || isNaN(mileage)) {
+                alert('Por favor, selecione um pneu e insira a quilometragem.');
+                return;
+            }
+            unmountTire(tireId, mileage);
+        }
+
+        function unmountTire(tireId, mileage) {
+            let tires = getFromStorage('tires');
+            let vehicles = getFromStorage('vehicles');
+            const tireIndex = tires.findIndex(t => t.id == tireId);
+            
+            if (tireIndex === -1) {
+                alert('Pneu não encontrado.');
+                return;
+            }
+            
+            const tire = tires[tireIndex];
+            if (tire.status !== 'Montado') {
+                alert('Este pneu não está montado em um veículo.');
+                return;
+            }
+            
+            if (mileage < tire.mileageMounted) {
+                alert('A quilometragem de desmontagem não pode ser menor que a de montagem.');
+                return;
+            }
+
+            // Update tire mileage
+            tire.mileage = mileage;
+            
+            // Update vehicle mileage if new mileage is greater
+            const vehicleIndex = vehicles.findIndex(v => v.plate === tire.vehiclePlate);
+            if (vehicleIndex > -1 && mileage > vehicles[vehicleIndex].mileage) {
+                vehicles[vehicleIndex].mileage = mileage;
+            }
+
+            // Update tire status and reset vehicle info
+            tire.status = 'Em Estoque';
+            tire.vehiclePlate = '';
+            tire.position = '';
+            tire.mileageMounted = 0;
+            
+            // Add history entry
+            tire.history.push({
+                type: 'Desmontagem',
+                date: new Date().toISOString().split('T')[0],
+                vehiclePlate: tire.vehiclePlate,
+                position: tire.position,
+                mileage
+            });
+
+            saveToStorage('tires', tires);
+            saveToStorage('vehicles', vehicles);
+            alert('Pneu desmontado com sucesso!');
+            closeModal('mount-tire-modal'); // Assuming this function exists to close the modal
+            displayTires();
+        }
+
+        function displayTires() {
+            const tbody = document.getElementById('tires-table-body');
+            let tires = getFromStorage('tires');
+            tires.sort((a, b) => a.serialNumber.localeCompare(b.serialNumber));
+            tbody.innerHTML = '';
+            if (tires.length > 0) {
+                tires.forEach(tire => {
+                    const statusClass = tire.status === 'Em Estoque' ? 'status-em-estoque' : (tire.status === 'Montado' ? 'status-montado' : 'status-nok');
+                    const actionsHtml = loggedInUser.isAdmin ? `
+                        <button class="action-button info" onclick="editTire(${tire.id})">Editar</button>
+                        <button class="action-button danger" onclick="deleteTire(${tire.id})">Excluir</button>
+                    ` : 'Nenhuma ação disponível';
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${tire.serialNumber}</td>
+                        <td>${tire.brand} / ${tire.model}</td>
+                        <td>${tire.mileage.toLocaleString('pt-BR')} km</td>
+                        <td><span class="${statusClass}">${tire.status}</span></td>
+                        <td>${tire.vehiclePlate || '-'}</td>
+                        <td class="action-column">${actionsHtml}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="6">Nenhum pneu cadastrado.</td></tr>`;
+            }
+        }
+        
+        function editTire(id) {
+            const tires = getFromStorage('tires');
+            const tire = tires.find(t => t.id == id);
+            if (!tire) return;
+            
+            document.getElementById('tire-form-container').style.display = 'block';
+            document.getElementById('editing-tire-id').value = tire.id;
+            document.getElementById('tire-serial').value = tire.serialNumber;
+            document.getElementById('tire-brand').value = tire.brand;
+            document.getElementById('tire-model').value = tire.model;
+            document.getElementById('tire-km-launch').value = tire.mileage;
+            document.getElementById('tire-lifetime').value = tire.lifetime;
+        }
+
+        function deleteTire(id) {
+            if (confirm('Tem certeza que deseja excluir este pneu?')) {
+                let tires = getFromStorage('tires');
+                tires = tires.filter(t => t.id != id);
+                saveToStorage('tires', tires);
+                displayTires();
+                alert('Pneu excluído com sucesso!');
+            }
+        }
+        
+        function clearTireForm() {
+            document.getElementById('tire-form').reset();
+            document.getElementById('editing-tire-id').value = '';
+            document.getElementById('tire-form-container').style.display = 'none';
+        }
+
+        // ################### MÓDULO DE MANUTENÇÃO ###################
+        function renderMaintenanceScreen() {
+            const maintenanceView = document.getElementById('maintenance-view');
+            maintenanceView.innerHTML = `
+                <div class="maintenance-form-card">
+                    <h2>Registrar Manutenção</h2><hr>
+                    <form id="maintenance-form">
+                        <input type="hidden" id="editing-maintenance-id">
+                        <div class="form-group"><label>Veículo:</label><select id="maintenance-vehicle-plate" required></select></div>
+                        <div class="form-group"><label>KM da Manutenção:</label><input type="number" id="maintenance-mileage" required></div>
+                        <div class="form-group"><label>Data:</label><input type="date" id="maintenance-date" required></div>
+                        <div class="form-group"><label>Tipo de Manutenção:</label><input type="text" id="maintenance-type" required></div>
+                        <div class="form-group"><label>Descrição/Serviços:</label><textarea id="maintenance-description" rows="4" required></textarea></div>
+                        <div class="form-group"><label>Custo (R$):</label><input type="number" step="0.01" id="maintenance-cost" required></div>
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn primary">Salvar Manutenção</button>
+                            <button type="button" class="submit-btn cancel-btn" onclick="clearMaintenanceForm()">Limpar</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="maintenance-history-card">
+                    <h2>Histórico de Manutenções</h2><hr>
+                    <table id="maintenance-table">
+                        <thead><tr><th>Veículo</th><th>KM</th><th>Data</th><th>Tipo</th><th>Custo</th><th class="action-column">Ações</th></tr></thead>
+                        <tbody id="maintenance-table-body"></tbody>
+                    </table>
+                </div>
+            `;
+            const maintenanceForm = document.getElementById('maintenance-form');
+            if (loggedInUser.isAdmin === false) {
+                maintenanceForm.style.display = 'none';
+            }
+            populateVehicleSelects();
+            displayMaintenance();
+            setupMaintenanceFormListener();
+        }
+
+        function setupMaintenanceFormListener() {
+            const maintenanceForm = document.getElementById('maintenance-form');
+            if (!maintenanceForm) return;
+            maintenanceForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveMaintenance();
+            });
+        }
+        
+        function saveMaintenance() {
+            const id = document.getElementById('editing-maintenance-id').value;
+            const vehiclePlate = document.getElementById('maintenance-vehicle-plate').value;
+            const mileage = parseFloat(document.getElementById('maintenance-mileage').value);
+            const date = document.getElementById('maintenance-date').value;
+            const type = document.getElementById('maintenance-type').value;
+            const description = document.getElementById('maintenance-description').value;
+            const cost = parseFloat(document.getElementById('maintenance-cost').value);
+
+            let maintenances = getFromStorage('maintenance');
+            const newMaintenance = {
+                id: id || ++maintenanceIdCounter,
+                vehiclePlate,
+                mileage,
+                date,
+                type,
+                description,
+                cost
+            };
+            saveToStorage('maintenanceIdCounter', [maintenanceIdCounter]);
+
+            if (id) {
+                const index = maintenances.findIndex(m => m.id == id);
+                if (index > -1) {
+                    maintenances[index] = newMaintenance;
+                }
+            } else {
+                maintenances.push(newMaintenance);
+            }
+            
+            saveToStorage('maintenance', maintenances);
+            alert('Manutenção salva com sucesso!');
+            clearMaintenanceForm();
+            displayMaintenance();
+        }
+        
+        function displayMaintenance() {
+            const tbody = document.getElementById('maintenance-table-body');
+            let maintenances = getFromStorage('maintenance');
+            maintenances.sort((a, b) => new Date(b.date) - new Date(a.date));
+            tbody.innerHTML = '';
+            if (maintenances.length > 0) {
+                maintenances.forEach(m => {
+                    const actionsHtml = loggedInUser.isAdmin ? `
+                        <button class="action-button info" onclick="editMaintenance(${m.id})">Editar</button>
+                        <button class="action-button danger" onclick="deleteMaintenance(${m.id})">Excluir</button>
+                    ` : 'Nenhuma ação disponível';
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${m.vehiclePlate}</td>
+                        <td>${m.mileage.toLocaleString('pt-BR')} km</td>
+                        <td>${new Date(m.date).toLocaleDateString()}</td>
+                        <td>${m.type}</td>
+                        <td>R$ ${m.cost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                        <td class="action-column">${actionsHtml}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="6">Nenhuma manutenção registrada.</td></tr>`;
+            }
+        }
+        
+        function editMaintenance(id) {
+            const maintenances = getFromStorage('maintenance');
+            const m = maintenances.find(m => m.id == id);
+            if (!m) return;
+            document.getElementById('editing-maintenance-id').value = m.id;
+            document.getElementById('maintenance-vehicle-plate').value = m.vehiclePlate;
+            document.getElementById('maintenance-mileage').value = m.mileage;
+            document.getElementById('maintenance-date').value = m.date;
+            document.getElementById('maintenance-type').value = m.type;
+            document.getElementById('maintenance-description').value = m.description;
+            document.getElementById('maintenance-cost').value = m.cost;
+        }
+
+        function deleteMaintenance(id) {
+            if (confirm('Tem certeza que deseja excluir este registro de manutenção?')) {
+                let maintenances = getFromStorage('maintenance');
+                maintenances = maintenances.filter(m => m.id != id);
+                saveToStorage('maintenance', maintenances);
+                displayMaintenance();
+                alert('Registro excluído com sucesso!');
+            }
+        }
+        
+        function clearMaintenanceForm() {
+            document.getElementById('maintenance-form').reset();
+            document.getElementById('editing-maintenance-id').value = '';
+        }
+
+        // ################### MÓDULO DE ABASTECIMENTO ###################
+        function renderFuelingScreen() {
+            const fuelingView = document.getElementById('fueling-view');
+            fuelingView.innerHTML = `
+                <div class="fueling-form-card">
+                    <h2>Registrar Abastecimento</h2><hr>
+                    <form id="fueling-form">
+                        <input type="hidden" id="editing-fueling-id">
+                        <div class="form-group"><label>Veículo:</label><select id="fueling-vehicle-plate" required></select></div>
+                        <div class="form-group"><label>KM no Abastecimento:</label><input type="number" id="fueling-mileage" required></div>
+                        <div class="form-group"><label>Data:</label><input type="date" id="fueling-date" required></div>
+                        <div class="form-group"><label>Combustível (Litros):</label><input type="number" step="0.01" id="fueling-liters" required></div>
+                        <div class="form-group"><label>Custo por Litro (R$):</label><input type="number" step="0.01" id="fueling-cost-per-liter" required></div>
+                        <div class="form-group"><label>Custo Total (R$):</label><input type="number" step="0.01" id="fueling-total-cost" readonly></div>
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn primary">Salvar Abastecimento</button>
+                            <button type="button" class="submit-btn cancel-btn" onclick="clearFuelingForm()">Limpar</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="fueling-history-card">
+                    <h2>Histórico de Abastecimentos</h2><hr>
+                    <table id="fueling-table">
+                        <thead><tr><th>Veículo</th><th>Data</th><th>KM</th><th>Litros</th><th>Custo Total</th><th class="action-column">Ações</th></tr></thead>
+                        <tbody id="fueling-table-body"></tbody>
+                    </table>
+                </div>
+            `;
+            const fuelingForm = document.getElementById('fueling-form');
+            if (loggedInUser.isAdmin === false) {
+                fuelingForm.style.display = 'none';
+            }
+            populateVehicleSelects();
+            displayFueling();
+            setupFuelingFormListener();
+        }
+
+        function setupFuelingFormListener() {
+            const fuelingForm = document.getElementById('fueling-form');
+            if (!fuelingForm) return;
+            const litersInput = document.getElementById('fueling-liters');
+            const costPerLiterInput = document.getElementById('fueling-cost-per-liter');
+            const totalCostInput = document.getElementById('fueling-total-cost');
+            
+            const calculateTotalCost = () => {
+                const liters = parseFloat(litersInput.value) || 0;
+                const costPerLiter = parseFloat(costPerLiterInput.value) || 0;
+                totalCostInput.value = (liters * costPerLiter).toFixed(2);
+            };
+
+            litersInput.addEventListener('input', calculateTotalCost);
+            costPerLiterInput.addEventListener('input', calculateTotalCost);
+
+            fuelingForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveFueling();
+            });
+        }
+        
+        function saveFueling() {
+            const id = document.getElementById('editing-fueling-id').value;
+            const vehiclePlate = document.getElementById('fueling-vehicle-plate').value;
+            const mileage = parseFloat(document.getElementById('fueling-mileage').value);
+            const date = document.getElementById('fueling-date').value;
+            const liters = parseFloat(document.getElementById('fueling-liters').value);
+            const costPerLiter = parseFloat(document.getElementById('fueling-cost-per-liter').value);
+            const totalCost = parseFloat(document.getElementById('fueling-total-cost').value);
+
+            let fuelings = getFromStorage('fueling');
+            const newFueling = {
+                id: id || ++fuelingIdCounter,
+                vehiclePlate,
+                mileage,
+                date,
+                liters,
+                costPerLiter,
+                totalCost
+            };
+            saveToStorage('fuelingIdCounter', [fuelingIdCounter]);
+
+            if (id) {
+                const index = fuelings.findIndex(f => f.id == id);
+                if (index > -1) {
+                    fuelings[index] = newFueling;
+                }
+            } else {
+                fuelings.push(newFueling);
+            }
+            
+            saveToStorage('fueling', fuelings);
+            alert('Abastecimento salvo com sucesso!');
+            clearFuelingForm();
+            displayFueling();
+        }
+        
+        function displayFueling() {
+            const tbody = document.getElementById('fueling-table-body');
+            let fuelings = getFromStorage('fueling');
+            fuelings.sort((a, b) => new Date(b.date) - new Date(a.date));
+            tbody.innerHTML = '';
+            if (fuelings.length > 0) {
+                fuelings.forEach(f => {
+                    const actionsHtml = loggedInUser.isAdmin ? `
+                        <button class="action-button info" onclick="editFueling(${f.id})">Editar</button>
+                        <button class="action-button danger" onclick="deleteFueling(${f.id})">Excluir</button>
+                    ` : 'Nenhuma ação disponível';
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${f.vehiclePlate}</td>
+                        <td>${new Date(f.date).toLocaleDateString()}</td>
+                        <td>${f.mileage.toLocaleString('pt-BR')} km</td>
+                        <td>${f.liters.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} L</td>
+                        <td>R$ ${f.totalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                        <td class="action-column">${actionsHtml}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="6">Nenhum abastecimento registrado.</td></tr>`;
+            }
+        }
+        
+        function editFueling(id) {
+            const fuelings = getFromStorage('fueling');
+            const f = fuelings.find(f => f.id == id);
+            if (!f) return;
+            document.getElementById('editing-fueling-id').value = f.id;
+            document.getElementById('fueling-vehicle-plate').value = f.vehiclePlate;
+            document.getElementById('fueling-mileage').value = f.mileage;
+            document.getElementById('fueling-date').value = f.date;
+            document.getElementById('fueling-liters').value = f.liters;
+            document.getElementById('fueling-cost-per-liter').value = f.costPerLiter;
+            document.getElementById('fueling-total-cost').value = f.totalCost;
+        }
+        
+        function deleteFueling(id) {
+            if (confirm('Tem certeza que deseja excluir este registro de abastecimento?')) {
+                let fuelings = getFromStorage('fueling');
+                fuelings = fuelings.filter(f => f.id != id);
+                saveToStorage('fueling', fuelings);
+                displayFueling();
+                alert('Registro excluído com sucesso!');
+            }
+        }
+
+        function clearFuelingForm() {
+            document.getElementById('fueling-form').reset();
+            document.getElementById('editing-fueling-id').value = '';
+        }
+        
+        // ################### MÓDULO DE ORDENS DE SERVIÇO ###################
+        function renderServiceOrdersScreen() {
+            const serviceOrdersView = document.getElementById('service-orders-view');
+            serviceOrdersView.innerHTML = `
+                <div class="service-order-form-card">
+                    <h2>Abrir Ordem de Serviço</h2><hr>
+                    <form id="service-order-form">
+                        <input type="hidden" id="editing-service-order-id">
+                        <div class="form-group"><label>Veículo:</label><select id="so-vehicle-plate" required></select></div>
+                        <div class="form-group"><label>Motorista:</label><select id="so-driver-select" required></select></div>
+                        <div class="form-group"><label>Data de Abertura:</label><input type="date" id="so-open-date" required></div>
+                        <div class="form-group"><label>Descrição do Problema:</label><textarea id="so-description" rows="4" required></textarea></div>
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn primary">Abrir OS</button>
+                            <button type="button" class="submit-btn cancel-btn" onclick="clearServiceOrderForm()">Limpar</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="service-order-history-card">
+                    <h2>Histórico de Ordens de Serviço</h2><hr>
+                    <table id="service-orders-table">
+                        <thead><tr><th>Nº OS</th><th>Veículo</th><th>Data Abertura</th><th>Motorista</th><th>Status</th><th class="action-column">Ações</th></tr></thead>
+                        <tbody id="service-orders-table-body"></tbody>
+                    </table>
+                </div>
+            `;
+            const serviceOrderForm = document.getElementById('service-order-form');
+            if (loggedInUser.isAdmin === false) {
+                serviceOrderForm.style.display = 'none';
+            }
+            populateVehicleSelects();
+            populateDriverSelects();
+            displayServiceOrders();
+            setupServiceOrderFormListener();
+        }
+
+        function setupServiceOrderFormListener() {
+            const serviceOrderForm = document.getElementById('service-order-form');
+            if (!serviceOrderForm) return;
+            serviceOrderForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveServiceOrder();
+            });
+        }
+        
+        function saveServiceOrder() {
+            const id = document.getElementById('editing-service-order-id').value;
+            const vehiclePlate = document.getElementById('so-vehicle-plate').value;
+            const driverId = document.getElementById('so-driver-select').value;
+            const openDate = document.getElementById('so-open-date').value;
+            const description = document.getElementById('so-description').value;
+
+            let serviceOrders = getFromStorage('service-orders');
+            const newServiceOrder = {
+                id: id || ++serviceOrderIdCounter,
+                vehiclePlate,
+                driverId,
+                openDate,
+                description,
+                status: 'Aberta',
+                closeDate: '',
+                solution: ''
+            };
+            saveToStorage('serviceOrderIdCounter', [serviceOrderIdCounter]);
+
+            if (id) {
+                const index = serviceOrders.findIndex(so => so.id == id);
+                if (index > -1) {
+                    serviceOrders[index] = newServiceOrder;
+                }
+            } else {
+                serviceOrders.push(newServiceOrder);
+            }
+            
+            saveToStorage('service-orders', serviceOrders);
+            alert('Ordem de serviço salva com sucesso!');
+            clearServiceOrderForm();
+            displayServiceOrders();
+        }
+
+        function displayServiceOrders() {
+            const tbody = document.getElementById('service-orders-table-body');
+            let serviceOrders = getFromStorage('service-orders');
+            serviceOrders.sort((a, b) => new Date(b.openDate) - new Date(a.openDate));
+            tbody.innerHTML = '';
+            if (serviceOrders.length > 0) {
+                serviceOrders.forEach(so => {
+                    const statusClass = so.status === 'Aberta' ? 'status-aberta' : 'status-concluida';
+                    const actionsHtml = `
+                        <button class="action-button info" onclick="viewServiceOrderDetail(${so.id})">Visualizar</button>
+                        ${loggedInUser.isAdmin ? (so.status === 'Aberta' ? `<button class="action-button success" onclick="completeServiceOrder(${so.id})">Concluir</button>` : `<button class="action-button danger" onclick="deleteServiceOrder(${so.id})">Excluir</button>`) : ''}
+                    `;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${so.id}</td>
+                        <td>${so.vehiclePlate}</td>
+                        <td>${new Date(so.openDate).toLocaleDateString()}</td>
+                        <td>${getDriverNameById(so.driverId)}</td>
+                        <td><span class="${statusClass}">${so.status}</span></td>
+                        <td class="action-column">${actionsHtml}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="6">Nenhuma ordem de serviço registrada.</td></tr>`;
+            }
+        }
+        
+        function viewServiceOrderDetail(id) {
+            const serviceOrders = getFromStorage('service-orders');
+            const so = serviceOrders.find(so => so.id == id);
+            if (!so) return;
+
+            const modal = document.getElementById('service-order-detail-modal');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Detalhes da OS Nº ${so.id}</h3>
+                        <button type="button" class="modal-close" onclick="closeModal('service-order-detail-modal')">&times;</button>
+                    </div>
+                    <p><strong>Veículo:</strong> ${so.vehiclePlate}</p>
+                    <p><strong>Motorista:</strong> ${getDriverNameById(so.driverId)}</p>
+                    <p><strong>Data de Abertura:</strong> ${new Date(so.openDate).toLocaleDateString()}</p>
+                    <p><strong>Status:</strong> <span class="${so.status === 'Aberta' ? 'status-aberta' : 'status-concluida'}">${so.status}</span></p>
+                    <hr>
+                    <h4>Descrição do Problema:</h4>
+                    <p>${so.description}</p>
+                    ${so.status === 'Concluída' ? `
+                        <hr>
+                        <h4>Solução/Serviços Realizados:</h4>
+                        <p><strong>Data de Conclusão:</strong> ${new Date(so.closeDate).toLocaleDateString()}</p>
+                        <p>${so.solution}</p>
+                    ` : ''}
+                </div>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function completeServiceOrder(id) {
+            const serviceOrders = getFromStorage('service-orders');
+            const so = serviceOrders.find(so => so.id == id);
+            if (!so) return;
+            
+            const solution = prompt('Descreva a solução/serviços realizados:');
+            if (solution) {
+                so.status = 'Concluída';
+                so.closeDate = new Date().toISOString().split('T')[0];
+                so.solution = solution;
+                saveToStorage('service-orders', serviceOrders);
+                alert('Ordem de serviço concluída com sucesso!');
+                displayServiceOrders();
+            }
+        }
+
+        function deleteServiceOrder(id) {
+            if (confirm('Tem certeza que deseja excluir esta ordem de serviço?')) {
+                let serviceOrders = getFromStorage('service-orders');
+                serviceOrders = serviceOrders.filter(so => so.id != id);
+                saveToStorage('service-orders', serviceOrders);
+                displayServiceOrders();
+                alert('Ordem de serviço excluída com sucesso!');
+            }
+        }
+        
+        function clearServiceOrderForm() {
+            document.getElementById('service-order-form').reset();
+            document.getElementById('editing-service-order-id').value = '';
+        }
+
+        // ################### MÓDULO DE RELATÓRIOS ###################
+        function renderReportsScreen() {
+            const reportsView = document.getElementById('reports-view');
+            reportsView.innerHTML = `
+                <div class="report-card">
+                    <h2>Gerador de Relatórios</h2><hr>
+                    <div class="report-filters">
+                        <div class="form-group"><label for="report-type">Tipo de Relatório:</label><select id="report-type" required>
+                            <option value="">Selecione...</option>
+                            <option value="fueling">Abastecimentos por Veículo</option>
+                            <option value="maintenance">Manutenções por Veículo</option>
+                            <option value="tires">Histórico de Pneus</option>
+                            <option value="service-orders">Ordens de Serviço</option>
+                        </select></div>
+                        <div class="form-group"><label for="report-vehicle">Veículo (Opcional):</label><select id="report-vehicle"></select></div>
+                        <div class="form-group"><label for="report-start-date">Data de Início:</label><input type="date" id="report-start-date"></div>
+                        <div class="form-group"><label for="report-end-date">Data de Fim:</label><input type="date" id="report-end-date"></div>
+                        <button class="submit-btn primary" onclick="generateReport()">Gerar Relatório</button>
+                    </div>
+                </div>
+                <div class="report-card" id="report-output" style="display: none;">
+                    <h3>Resultado do Relatório</h3><hr>
+                    <div id="report-content"></div>
+                </div>
+            `;
+            const reportVehicleSelect = document.getElementById('report-vehicle');
+            const vehicles = getFromStorage('vehicles');
+            reportVehicleSelect.innerHTML = '<option value="">Todos os Veículos</option>';
+            vehicles.forEach(v => {
+                const option = document.createElement('option');
+                option.value = v.plate;
+                option.textContent = `${v.plate} - ${v.model}`;
+                reportVehicleSelect.appendChild(option);
+            });
+        }
+        
+        function generateReport() {
+            const reportType = document.getElementById('report-type').value;
+            const vehiclePlate = document.getElementById('report-vehicle').value;
+            const startDate = document.getElementById('report-start-date').value;
+            const endDate = document.getElementById('report-end-date').value;
+            const reportContentDiv = document.getElementById('report-content');
+            const reportOutputCard = document.getElementById('report-output');
+
+            if (!reportType) {
+                alert('Por favor, selecione um tipo de relatório.');
+                return;
+            }
+
+            let data = [];
+            let reportHtml = '';
+
+            if (reportType === 'fueling') {
+                data = getFromStorage('fueling').filter(f => {
+                    const matchesVehicle = !vehiclePlate || f.vehiclePlate === vehiclePlate;
+                    const matchesDate = (!startDate || f.date >= startDate) && (!endDate || f.date <= endDate);
+                    return matchesVehicle && matchesDate;
+                }).sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                reportHtml = `
+                    <h4>Relatório de Abastecimentos</h4>
+                    <table>
+                        <thead><tr><th>Veículo</th><th>Data</th><th>KM</th><th>Litros</th><th>Custo Total</th></tr></thead>
+                        <tbody>
+                            ${data.map(f => `
+                                <tr>
+                                    <td>${f.vehiclePlate}</td>
+                                    <td>${new Date(f.date).toLocaleDateString()}</td>
+                                    <td>${f.mileage.toLocaleString('pt-BR')} km</td>
+                                    <td>${f.liters.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} L</td>
+                                    <td>R$ ${f.totalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                
+                const totalCost = data.reduce((sum, f) => sum + f.totalCost, 0);
+                const totalLiters = data.reduce((sum, f) => sum + f.liters, 0);
+                const avgConsumption = totalLiters && data.length > 1 ? ((data[data.length - 1].mileage - data[0].mileage) / totalLiters).toFixed(2) : 'N/A';
+                
+                reportHtml += `
+                    <p style="margin-top: 20px;"><strong>Custo Total:</strong> R$ ${totalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                    <p><strong>Total de Litros:</strong> ${totalLiters.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} L</p>
+                `;
+
+            } else if (reportType === 'maintenance') {
+                data = getFromStorage('maintenance').filter(m => {
+                    const matchesVehicle = !vehiclePlate || m.vehiclePlate === vehiclePlate;
+                    const matchesDate = (!startDate || m.date >= startDate) && (!endDate || m.date <= endDate);
+                    return matchesVehicle && matchesDate;
+                }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                reportHtml = `
+                    <h4>Relatório de Manutenções</h4>
+                    <table>
+                        <thead><tr><th>Veículo</th><th>Data</th><th>KM</th><th>Tipo</th><th>Descrição</th><th>Custo</th></tr></thead>
+                        <tbody>
+                            ${data.map(m => `
+                                <tr>
+                                    <td>${m.vehiclePlate}</td>
+                                    <td>${new Date(m.date).toLocaleDateString()}</td>
+                                    <td>${m.mileage.toLocaleString('pt-BR')} km</td>
+                                    <td>${m.type}</td>
+                                    <td>${m.description}</td>
+                                    <td>R$ ${m.cost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                const totalCost = data.reduce((sum, m) => sum + m.cost, 0);
+                reportHtml += `<p style="margin-top: 20px;"><strong>Custo Total:</strong> R$ ${totalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>`;
+            
+            } else if (reportType === 'tires') {
+                data = getFromStorage('tires').filter(t => {
+                    const matchesVehicle = !vehiclePlate || t.vehiclePlate === vehiclePlate;
+                    return matchesVehicle;
+                }).sort((a, b) => a.serialNumber.localeCompare(b.serialNumber));
+                
+                reportHtml = `
+                    <h4>Relatório de Pneus</h4>
+                    <table>
+                        <thead><tr><th>Nº Série</th><th>Marca/Modelo</th><th>Status</th><th>KM Atual</th><th>KM Vida Útil</th><th>Veículo</th><th>Posição</th></tr></thead>
+                        <tbody>
+                            ${data.map(t => `
+                                <tr>
+                                    <td>${t.serialNumber}</td>
+                                    <td>${t.brand} / ${t.model}</td>
+                                    <td><span class="status-${t.status === 'Em Estoque' ? 'em-estoque' : 'montado'}">${t.status}</span></td>
+                                    <td>${t.mileage.toLocaleString('pt-BR')} km</td>
+                                    <td>${t.lifetime.toLocaleString('pt-BR')} km</td>
+                                    <td>${t.vehiclePlate || '-'}</td>
+                                    <td>${t.position || '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else if (reportType === 'service-orders') {
+                data = getFromStorage('service-orders').filter(so => {
+                    const matchesVehicle = !vehiclePlate || so.vehiclePlate === vehiclePlate;
+                    const matchesDate = (!startDate || so.openDate >= startDate) && (!endDate || so.openDate <= endDate);
+                    return matchesVehicle && matchesDate;
+                }).sort((a, b) => new Date(a.openDate) - new Date(b.openDate));
+                
+                reportHtml = `
+                    <h4>Relatório de Ordens de Serviço</h4>
+                    <table>
+                        <thead><tr><th>Nº OS</th><th>Veículo</th><th>Motorista</th><th>Data Abertura</th><th>Data Conclusão</th><th>Status</th></tr></thead>
+                        <tbody>
+                            ${data.map(so => `
+                                <tr>
+                                    <td>${so.id}</td>
+                                    <td>${so.vehiclePlate}</td>
+                                    <td>${getDriverNameById(so.driverId)}</td>
+                                    <td>${new Date(so.openDate).toLocaleDateString()}</td>
+                                    <td>${so.closeDate ? new Date(so.closeDate).toLocaleDateString() : '-'}</td>
+                                    <td><span class="status-${so.status === 'Aberta' ? 'aberta' : 'concluida'}">${so.status}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            reportContentDiv.innerHTML = data.length > 0 ? reportHtml : `<p>Nenhum dado encontrado para o período/veículo selecionado.</p>`;
+            reportOutputCard.style.display = 'block';
+        }
+
+        // ################### MÓDULO DE USUÁRIOS (apenas para Admin) ###################
+        function renderUsersScreen() {
+            const usersView = document.getElementById('users-view');
+            if (!loggedInUser.isAdmin) {
+                usersView.innerHTML = `<div class="user-history-card"><h2>Usuários</h2><p style="color: var(--danger-color); font-weight: bold;">Você não tem permissão para acessar esta seção.</p></div>`;
+                return;
+            }
+
+            usersView.innerHTML = `
+                <div class="user-form-card">
+                    <h2>Cadastrar/Atualizar Usuário</h2><hr>
+                    <form id="user-form">
+                        <input type="hidden" id="editing-user-id">
+                        <div class="form-group"><label>Nome:</label><input type="text" id="user-name" required></div>
+                        <div class="form-group"><label>Usuário:</label><input type="text" id="user-username" required></div>
+                        <div class="form-group"><label>Senha:</label><input type="password" id="user-password" required></div>
+                        <div class="form-group"><label>É Administrador?</label><input type="checkbox" id="user-is-admin"></div>
+                        <hr style="margin-top: 25px; margin-bottom: 25px; border-color: #eee;">
+                        <h3>Permissões de Módulo</h3>
+                        <div class="module-checkboxes" id="module-permissions"></div>
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn primary">Salvar Usuário</button>
+                            <button type="button" class="submit-btn cancel-btn" onclick="clearUserForm()">Limpar</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="user-history-card">
+                    <h2>Lista de Usuários</h2><hr>
+                    <table id="users-table">
+                        <thead><tr><th>Nome</th><th>Usuário</th><th>Admin</th><th class="action-column">Ações</th></tr></thead>
+                        <tbody id="users-table-body"></tbody>
+                    </table>
+                </div>
+            `;
+            populateModuleCheckboxes();
+            displayUsers();
+            setupUserFormListener();
+        }
+
+        function populateModuleCheckboxes() {
+            const container = document.getElementById('module-permissions');
+            container.innerHTML = '';
+            allModules.forEach(module => {
+                const moduleName = moduleTranslations[module];
+                const checkbox = document.createElement('div');
+                checkbox.innerHTML = `
+                    <input type="checkbox" id="permission-${module}" value="${module}">
+                    <label for="permission-${module}">${moduleName}</label>
+                `;
+                container.appendChild(checkbox);
+            });
+        }
+
+        function setupUserFormListener() {
+            const userForm = document.getElementById('user-form');
+            if (!userForm) return;
+            userForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveUser();
+            });
+        }
+        
+        function saveUser() {
+            const id = document.getElementById('editing-user-id').value;
+            const name = document.getElementById('user-name').value;
+            const username = document.getElementById('user-username').value;
+            const password = document.getElementById('user-password').value;
+            const isAdmin = document.getElementById('user-is-admin').checked;
+            const modules = Array.from(document.querySelectorAll('#module-permissions input[type="checkbox"]:checked')).map(cb => cb.value);
+
+            const newUser = {
+                id: id ? id : Date.now(),
+                name,
+                username,
+                password,
+                isAdmin,
+                modules
+            };
+            
+            let users = getFromStorage('users');
+            if (id) {
+                const index = users.findIndex(u => u.id == id);
+                if (index > -1) {
+                    users[index] = newUser;
+                }
+            } else {
+                users.push(newUser);
+            }
+            saveToStorage('users', users);
+            alert('Usuário salvo com sucesso!');
+            clearUserForm();
+            displayUsers();
+        }
+
+        function displayUsers() {
+            const tbody = document.getElementById('users-table-body');
+            let users = getFromStorage('users');
+            users.sort((a, b) => a.name.localeCompare(b.name));
+            tbody.innerHTML = '';
+            if (users.length > 0) {
+                users.forEach(user => {
+                    const actionsHtml = user.id === loggedInUser.id ? `
+                        <button class="action-button info" onclick="editUser(${user.id})">Editar</button>
+                    ` : `
+                        <button class="action-button info" onclick="editUser(${user.id})">Editar</button>
+                        <button class="action-button danger" onclick="deleteUser(${user.id})">Excluir</button>
+                    `;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${user.name}</td>
+                        <td>${user.username}</td>
+                        <td>${user.isAdmin ? 'Sim' : 'Não'}</td>
+                        <td class="action-column">${actionsHtml}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="4">Nenhum usuário cadastrado.</td></tr>`;
+            }
+        }
+
+        function editUser(id) {
+            const users = getFromStorage('users');
+            const user = users.find(u => u.id == id);
+            if (!user) return;
+            document.getElementById('editing-user-id').value = user.id;
+            document.getElementById('user-name').value = user.name;
+            document.getElementById('user-username').value = user.username;
+            document.getElementById('user-password').value = user.password;
+            document.getElementById('user-is-admin').checked = user.isAdmin;
+            document.querySelectorAll('#module-permissions input[type="checkbox"]').forEach(cb => {
+                cb.checked = user.modules.includes(cb.value);
+            });
+        }
+        
+        function deleteUser(id) {
+            if (confirm('Tem certeza que deseja excluir este usuário?')) {
+                let users = getFromStorage('users');
+                users = users.filter(u => u.id != id);
+                saveToStorage('users', users);
+                displayUsers();
+                alert('Usuário excluído com sucesso!');
+            }
+        }
+
+        function clearUserForm() {
+            document.getElementById('user-form').reset();
+            document.getElementById('editing-user-id').value = '';
+            document.querySelectorAll('#module-permissions input[type="checkbox"]').forEach(cb => cb.checked = false);
+        }
+    </script>
+</body>
+</html>
